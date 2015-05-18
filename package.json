@@ -1,0 +1,23 @@
+{
+  "name": "fis3-packager-map",
+  "version": "1.0.0",
+  "description": "A packager plugin for fis to pack resources.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fex-team/fis3-packager-map.git"
+  },
+  "keywords": [
+    "fis3",
+    "pack"
+  ],
+  "author": "fis",
+  "license": "BSD",
+  "bugs": {
+    "url": "https://github.com/fex-team/fis3-packager-map/issues"
+  },
+  "homepage": "https://github.com/fex-team/fis3-packager-map"
+}
