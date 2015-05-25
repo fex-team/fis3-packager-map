@@ -29,7 +29,10 @@ module.exports = function(ret, pack, settings, opt) {
   });
 
   function find(reg, rExt) {
-    if (reg === '**') {
+    if (src[reg]) {
+      return [src[reg]];
+    } else if (reg === '**') {
+      // do nothing
     } else if (typeof reg === 'string') {
       reg = _.glob(reg);
     }
