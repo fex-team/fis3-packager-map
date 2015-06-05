@@ -92,7 +92,7 @@ module.exports = function(ret, pack, settings, opt) {
         })
       }
 
-      if (!packed[file.subpath]) {
+      if (!packed[file.subpath] && file.rExt === pkg.rExt) {
         packed[file.subpath] = true;
         filtered.push(file);
       }
