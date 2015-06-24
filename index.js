@@ -127,7 +127,7 @@ module.exports = function(ret, pack, settings, opt) {
             c = c.replace(/@charset\s+(?:'[^']*'|"[^"]*"|\S*);?/gi, '');
           }
 
-          content += c;
+          content += '/*!' + file.subpath + '*/\n' + c;
         }
 
         ret.map.res[id].pkg = pid;
