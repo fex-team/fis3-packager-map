@@ -75,6 +75,18 @@ module.exports = function(ret, pack, settings, opt) {
       list = _[exclude ? 'difference' : 'union'](list, mathes);
     });
 
+    // 根据 packOrder 排序
+    list = list.sort(function(a, b) {
+      var a1 = a.packOrder >> 0;
+      var b1 = b.packOrder >> 0;
+
+      if (a1 === b1) {
+        return list.indexOf(a) - list.indexOf(b);
+      }
+
+      return a1 - b1;
+    });
+
     // sort by dependency
     var filtered = [];
     while (list.length) {
