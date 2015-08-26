@@ -16,6 +16,10 @@ var path = require('path');
 var _ = fis.util;
 
 module.exports = function(ret, pack, settings, opt) {
+  if (settings && Object.keys(settings).length) {
+    pack = settings;
+  }
+
   var src = ret.src;
   var sources = [];
   var packed = {}; // cache all packed resource.

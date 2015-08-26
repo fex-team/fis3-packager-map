@@ -2,10 +2,10 @@ fis3-packager-map
 =====================
 
 
-A packager plugin for fis to pack resources.
+fis3 中内嵌的打包工具。
 
 
-## settings
+## 配置方式
 
 $ vi path/to/project/fis-conf.js
 
@@ -18,3 +18,18 @@ fis.match('*.js', {
   packTo: '/pkg/all.js'
 });
 ```
+
+或者：
+
+```
+fis.match('::package', {
+  packager: fis.plugin('map', {
+    'pkg/all.js': [
+      'libs/*.js',
+      'widget/*.js'
+    ]
+  })
+})
+```
+
+通过插件配置的规则优先于 `packTo`。
