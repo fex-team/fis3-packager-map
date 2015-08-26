@@ -21,7 +21,7 @@ fis.match('*.js', {
 
 或者：
 
-```
+```js
 fis.match('::package', {
   packager: fis.plugin('map', {
     'pkg/all.js': [
