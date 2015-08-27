@@ -16,7 +16,10 @@ var path = require('path');
 var _ = fis.util;
 
 module.exports = function(ret, pack, settings, opt) {
+  var fromSettings = false;
+
   if (settings && Object.keys(settings).length) {
+    fromSettings = true;
     pack = settings;
   }
 
@@ -80,7 +83,7 @@ module.exports = function(ret, pack, settings, opt) {
     });
 
     // 根据 packOrder 排序
-    list = list.sort(function(a, b) {
+    fromSettings || (list = list.sort(function(a, b) {
       var a1 = a.packOrder >> 0;
       var b1 = b.packOrder >> 0;
 
@@ -89,7 +92,7 @@ module.exports = function(ret, pack, settings, opt) {
       }
 
       return a1 - b1;
-    });
+    }));
 
     // sort by dependency
     var filtered = [];
