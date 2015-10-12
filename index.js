@@ -82,13 +82,16 @@ module.exports = function(ret, pack, settings, opt) {
       list = _[exclude ? 'difference' : 'union'](list, mathes);
     });
 
+    // fix https://github.com/fex-team/fis3-packager-map/issues/4
+    var originOrder = list.concat();
+
     // 根据 packOrder 排序
     fromSettings || (list = list.sort(function(a, b) {
       var a1 = a.packOrder >> 0;
       var b1 = b.packOrder >> 0;
 
       if (a1 === b1) {
-        return list.indexOf(a) - list.indexOf(b);
+        return originOrder.indexOf(a) - originOrder.indexOf(b);
       }
 
       return a1 - b1;
