@@ -18,6 +18,14 @@ var _ = fis.util;
 module.exports = function(ret, pack, settings, opt) {
   var fromSettings = false;
 
+  // 是否添加调试信息
+  var useTrack = true;
+
+  if (_.has(settings,'useTrack')){
+    useTrack = settings.useTrack;
+    delete settings.useTrack;
+  }
+
   if (settings && Object.keys(settings).length) {
     fromSettings = true;
     pack = settings;
@@ -148,8 +156,12 @@ module.exports = function(ret, pack, settings, opt) {
           } else if (file.isCssLike) {
             c = c.replace(/@charset\s+(?:'[^']*'|"[^"]*"|\S*);?/gi, '');
           }
-
-          content += '/*!' + file.subpath + '*/\n' + c;
+          if(useTrack){
+            content += '/*!' + file.subpath + '*/\n' + c;
+          }
+          else{
+            content += c;
+          }
         }
 
         ret.map.res[id].pkg = pid;
