@@ -1,81 +1,26 @@
 {
-  "_args": [
-    [
-      "fis3-packager-map@1.0.9",
-      "C:\\Users\\johnx\\AppData\\Roaming\\npm\\node_modules\\fis3"
-    ]
-  ],
-  "_from": "fis3-packager-map@1.0.9",
-  "_id": "fis3-packager-map@1.0.9",
-  "_inCache": true,
-  "_installable": true,
-  "_location": "/fis3/fis3-packager-map",
-  "_nodeVersion": "0.12.2",
-  "_npmUser": {
-    "email": "2betop.cn@gmail.com",
-    "name": "2betop"
-  },
-  "_npmVersion": "2.7.4",
-  "_phantomChildren": {},
-  "_requested": {
-    "name": "fis3-packager-map",
-    "raw": "fis3-packager-map@1.0.9",
-    "rawSpec": "1.0.9",
-    "scope": null,
-    "spec": "1.0.9",
-    "type": "version"
-  },
-  "_requiredBy": [
-    "/fis3"
-  ],
-  "_resolved": "https://registry.npmjs.org/fis3-packager-map/-/fis3-packager-map-1.0.9.tgz",
-  "_shasum": "e5a31cafb2370fa133e82f59eee503fcb58a8d3a",
-  "_shrinkwrap": null,
-  "_spec": "fis3-packager-map@1.0.9",
-  "_where": "C:\\Users\\johnx\\AppData\\Roaming\\npm\\node_modules\\fis3",
-  "author": {
-    "name": "fis"
-  },
-  "bugs": {
-    "url": "https://github.com/fex-team/fis3-packager-map/issues"
+  "name": "fis3-packager-map",
+  "version": "1.0.9",
+  "description": "A packager plugin for fis to pack resources.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "source-map": "^0.5.5"
   },
-  "description": "A packager plugin for fis to pack resources.",
-  "devDependencies": {},
-  "directories": {},
-  "dist": {
-    "shasum": "e5a31cafb2370fa133e82f59eee503fcb58a8d3a",
-    "tarball": "http://registry.npmjs.org/fis3-packager-map/-/fis3-packager-map-1.0.9.tgz"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fex-team/fis3-packager-map.git"
   },
-  "gitHead": "906f9741179fa0300625c70e3d5612a3876d7f10",
-  "homepage": "https://github.com/fex-team/fis3-packager-map",
   "keywords": [
     "fis3",
     "pack"
   ],
+  "author": "fis",
   "license": "BSD",
-  "main": "index.js",
-  "maintainers": [
-    {
-      "name": "2betop",
-      "email": "2betop.cn@gmail.com"
-    },
-    {
-      "name": "fis-dev",
-      "email": "fansekey@gmail.com"
-    }
-  ],
-  "name": "fis3-packager-map",
-  "optionalDependencies": {},
-  "readme": "ERROR: No README data found!",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/fex-team/fis3-packager-map.git"
+  "bugs": {
+    "url": "https://github.com/fex-team/fis3-packager-map/issues"
   },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "version": "1.0.9"
+  "homepage": "https://github.com/fex-team/fis3-packager-map"
 }
