@@ -17,7 +17,7 @@
  * });
  */
 var SourceMap = require('source-map');
-var rSourceMap = /\/\/\#\s*sourceMappingURL[^\r\n]*(?:\r?\n|$)/i;
+var rSourceMap = /(?:\/\/\#\s*sourceMappingURL[^\r\n]*|\/\*\#\s*sourceMappingURL[^\r\n]*\*\/)(?:\r?\n|$)/ig;
 var path = require('path');
 var _ = fis.util;
 

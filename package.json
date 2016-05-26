@@ -1,6 +1,6 @@
 {
   "name": "fis3-packager-map",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "A packager plugin for fis to pack resources.",
   "main": "index.js",
   "scripts": {
