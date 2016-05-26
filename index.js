@@ -22,19 +22,35 @@ var path = require('path');
 var _ = fis.util;
 
 module.exports = function (ret, pack, settings, opt) {
-  var fromSettings = false;
+  var needSortByPackOrder = true;
 
   // 是否添加调试信息
   var useTrack = true;
+  var useSourceMap = false;
 
   if (_.has(settings, 'useTrack')) {
     useTrack = settings.useTrack;
     delete settings.useTrack;
   }
 
+  if (_.has(settings, 'useSourceMap')) {
+    useSourceMap = settings.useSourceMap;
+    delete settings.useSourceMap;
+  }
+
+  var root = fis.project.getProjectPath();
+  var externalFile = path.join(root, 'fis-pack.json');
+
   if (settings && Object.keys(settings).length) {
-    fromSettings = true;
+    needSortByPackOrder = false;
     pack = settings;
+    fis.log.debug('Use pack info from plugin settings.');
+  } else if (_.exists(externalFile)) {
+    pack = _.readJSON(externalFile);
+    needSortByPackOrder = false;
+    fis.log.debug('Use pack info from `fis-pack.json`.');
+  } else {
+    fis.log.debug('Use pack info from `packTo` property.');
   }
 
   var src = ret.src;
@@ -42,8 +58,7 @@ module.exports = function (ret, pack, settings, opt) {
   var packed = {}; // cache all packed resource.
   var ns = fis.config.get('namespace');
   var connector = fis.config.get('namespaceConnector', ':');
-  var root = fis.project.getProjectPath(),
-	  sourceNode = new SourceMap.SourceNode();
+  var sourceNode = useSourceMap && new SourceMap.SourceNode();
 
   // 生成数组
   Object.keys(src).forEach(function (key) {
@@ -70,6 +85,14 @@ module.exports = function (ret, pack, settings, opt) {
 
     if (!Array.isArray(patterns)) {
       patterns = [patterns];
+    }
+
+    var valid = patterns.every(function(pattern) {
+      return typeof pattern === 'string' || pattern instanceof RegExp;
+    });
+
+    if (!valid) {
+      throw new Error('TypeError: only string and RegExp are allowed.');
     }
 
     var pid = (ns ? ns + connector : '') + 'p' + index;
@@ -101,7 +124,7 @@ module.exports = function (ret, pack, settings, opt) {
     var originOrder = list.concat();
 
     // 根据 packOrder 排序
-    fromSettings || (list = list.sort(function (a, b) {
+    needSortByPackOrder && (list = list.sort(function (a, b) {
       var a1 = a.packOrder >> 0;
       var b1 = b.packOrder >> 0;
 
@@ -138,7 +161,7 @@ module.exports = function (ret, pack, settings, opt) {
     var content = '';
     var has = [];
     var requires = [];
-    var requireMap = {}, hasSourceMap = false;
+    var requireMap = {};
 
     filtered.forEach(function (file) {
       var id = file.getId(),
@@ -160,9 +183,9 @@ module.exports = function (ret, pack, settings, opt) {
 
         if (content) prefix = '\n' + prefix;
 
-        if (sourceNode) {
-          c = c.replace(rSourceMap, '');
+        c = c.replace(rSourceMap, '');
 
+        if (sourceNode) {
           sourceNode.add(prefix);
 
           var mapFile = getMapFile(file);
@@ -174,9 +197,8 @@ module.exports = function (ret, pack, settings, opt) {
             // mapFile.release = false;
             // here? hasSourceMap = true;
           } else {
-            sourceNode.add(c);
+            sourceNode.add(contents2sourceNodes(c, file.subpath));
           }
-          hasSourceMap = true;
         }
         else if (file.isCssLike && c) // cant remove code if sourceNode
           c = c.replace(/@charset\s+(?:'[^']*'|"[^"]*"|\S*);?/gi, '');
@@ -191,7 +213,7 @@ module.exports = function (ret, pack, settings, opt) {
     });
 
     if (has.length) {
-      if (hasSourceMap) {
+      if (sourceNode) {
         var mapping = fis.file.wrap(pkg.dirname + '/' + pkg.filename + pkg.rExt + '.map');
         var code_map = sourceNode.toStringWithSourceMap({
           file: pkg.subpath
@@ -239,4 +261,18 @@ function getMapFile(file) {
   }
 
   return null;
+}
+
+function contents2sourceNodes(content, filename) {
+  var chunks = [];
+  var lineIndex = 0;
+  content.replace(/.*(\r\n|\n|\r|$)/g, function(line) {
+    lineIndex++;
+    chunks.push(new SourceMap.SourceNode(lineIndex, 0, filename, line));
+  });
+
+  var node = new SourceMap.SourceNode(1, 0, filename, chunks);
+  node.setSourceContent(filename, content);
+
+  return node;
 }

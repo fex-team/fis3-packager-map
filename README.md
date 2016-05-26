@@ -35,9 +35,14 @@ fis.match('::package', {
 ```
 规则优先级：
 
-通过插件配置 > fis.set("pack", ) > fis-pack.json > match( , {`packTo`})
+通过插件配置 > fis.set("pack", {}) > fis-pack.json > match( 'xxx' , {`packTo`})
 
-## 关闭输出路径信息
+## 配置项
+
+1. `useTrack` 默认 `true`。 是否将合并前的文件路径写入注释中，方便定位代码。
+2. `useSourceMap` 默认为 `false`。是否开启 souremap 功能。
+
+### 关闭输出路径信息
 
 默认打包后输出路径信息,便于调试.形式如下
 
@@ -58,4 +63,20 @@ fis.match('::package', {
   })
 })
 ```
+
+### 开启 SourceMap 功能
+
+```js
+fis.match('::package', {
+  packager: fis.plugin('map', {
+    useSourceMap : true, // 合并后开启 SourceMap 功能。
+    'pkg/all.js': [
+       'libs/*.js',
+       'widget/*.js'
+    ]
+  })
+})
+```
+
+
 

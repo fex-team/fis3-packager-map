@@ -1,13 +1,13 @@
 {
   "name": "fis3-packager-map",
-  "version": "1.0.9",
+  "version": "1.1.0",
   "description": "A packager plugin for fis to pack resources.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "source-map": "^0.5.5"
+    "source-map": "^0.5.6"
   },
   "repository": {
     "type": "git",
