@@ -58,7 +58,6 @@ module.exports = function (ret, pack, settings, opt) {
   var packed = {}; // cache all packed resource.
   var ns = fis.config.get('namespace');
   var connector = fis.config.get('namespaceConnector', ':');
-  var sourceNode = useSourceMap && new SourceMap.SourceNode();
 
   // 生成数组
   Object.keys(src).forEach(function (key) {
@@ -81,6 +80,7 @@ module.exports = function (ret, pack, settings, opt) {
   }
 
   Object.keys(pack).forEach(function (subpath, index) {
+    var sourceNode = useSourceMap && new SourceMap.SourceNode();
     var patterns = pack[subpath];
 
     if (!Array.isArray(patterns)) {
@@ -164,10 +164,7 @@ module.exports = function (ret, pack, settings, opt) {
     var requireMap = {};
 
     filtered.forEach(function (file) {
-      var id = file.getId(),
-			prefix = useTrack ? ('/*!' + file.id + '*/\n') : ''; // either js or css
-      if (file.isJsLike)
-        prefix = ';' + prefix;
+      var id = file.getId();
 
       if (ret.map.res[id]) {
         var c = file.getContent();
@@ -180,6 +177,13 @@ module.exports = function (ret, pack, settings, opt) {
         };
         fis.emit('pack:file', message);
         c = message.content;
+
+        var prefix = useTrack ? ('/*!' + file.id + '*/\n') : ''; // either js or css
+        if (file.isJsLike) {
+          prefix = ';' + prefix;
+        } else if (file.isCssLike && c) {
+          c = c.replace(/@charset\s+(?:'[^']*'|"[^"]*"|\S*);?/gi, '');
+        }
 
         if (content) prefix = '\n' + prefix;
 
@@ -200,8 +204,6 @@ module.exports = function (ret, pack, settings, opt) {
             sourceNode.add(contents2sourceNodes(c, file.subpath));
           }
         }
-        else if (file.isCssLike && c) // cant remove code if sourceNode
-          c = c.replace(/@charset\s+(?:'[^']*'|"[^"]*"|\S*);?/gi, '');
 
         content += prefix + c;
 
@@ -223,7 +225,7 @@ module.exports = function (ret, pack, settings, opt) {
         mapping.setContent(generater.toString());
 
         ret.pkg[mapping.subpath] = mapping;
-        content += '//# sourceMappingURL=' + mapping.getUrl();
+        content += pkg.isCssLike ? ('/*# sourceMappingURL=' + mapping.getUrl() + '*/') : ('//# sourceMappingURL=' + mapping.getUrl());
       }
 
       pkg.setContent(content);
