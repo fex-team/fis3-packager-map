@@ -31,8 +31,11 @@ fis.match('::package', {
   })
 })
 ```
+{'pkg/xxx': [...], ...} 的格式也可用于 fis.set("pack", ) 或 fis-pack.json 来设置。
+```
+规则优先级：
 
-通过插件配置的规则优先于 `packTo`。
+通过插件配置 > fis.set("pack", ) > fis-pack.json > match( , {`packTo`})
 
 ## 关闭输出路径信息
 

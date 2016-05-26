@@ -5,23 +5,29 @@
  *   packTo: 'pkg/all.js'
  * });
  *
- *
+ * 或者：
+ * fis-pack.json
+ * {
+ *   '/pkg/all.js': '*.js'， ...
+ * }
  * 或者：
  *
  * fis.set('pack', {
  *   '/pkg/all.js': '*.js'
  * });
  */
+var SourceMap = require('source-map');
+var rSourceMap = /\/\/\#\s*sourceMappingURL[^\r\n]*(?:\r?\n|$)/i;
 var path = require('path');
 var _ = fis.util;
 
-module.exports = function(ret, pack, settings, opt) {
+module.exports = function (ret, pack, settings, opt) {
   var fromSettings = false;
 
   // 是否添加调试信息
   var useTrack = true;
 
-  if (_.has(settings,'useTrack')){
+  if (_.has(settings, 'useTrack')) {
     useTrack = settings.useTrack;
     delete settings.useTrack;
   }
@@ -36,10 +42,11 @@ module.exports = function(ret, pack, settings, opt) {
   var packed = {}; // cache all packed resource.
   var ns = fis.config.get('namespace');
   var connector = fis.config.get('namespaceConnector', ':');
-  var root = fis.project.getProjectPath();
+  var root = fis.project.getProjectPath(),
+	  sourceNode = new SourceMap.SourceNode();
 
   // 生成数组
-  Object.keys(src).forEach(function(key) {
+  Object.keys(src).forEach(function (key) {
     sources.push(src[key]);
   });
 
@@ -52,13 +59,13 @@ module.exports = function(ret, pack, settings, opt) {
       reg = _.glob(reg);
     }
 
-    return sources.filter(function(file) {
+    return sources.filter(function (file) {
       reg.lastIndex = 0;
       return (reg === '**' || reg.test(file.subpath)) && (!rExt || file.rExt === rExt);
     });
   }
 
-  Object.keys(pack).forEach(function(subpath, index) {
+  Object.keys(pack).forEach(function (subpath, index) {
     var patterns = pack[subpath];
 
     if (!Array.isArray(patterns)) {
@@ -74,7 +81,7 @@ module.exports = function(ret, pack, settings, opt) {
 
     var list = [];
 
-    patterns.forEach(function(pattern, index) {
+    patterns.forEach(function (pattern, index) {
       var exclude = typeof pattern === 'string' && pattern.substring(0, 1) === '!';
 
       if (exclude) {
@@ -94,7 +101,7 @@ module.exports = function(ret, pack, settings, opt) {
     var originOrder = list.concat();
 
     // 根据 packOrder 排序
-    fromSettings || (list = list.sort(function(a, b) {
+    fromSettings || (list = list.sort(function (a, b) {
       var a1 = a.packOrder >> 0;
       var b1 = b.packOrder >> 0;
 
@@ -113,13 +120,13 @@ module.exports = function(ret, pack, settings, opt) {
 
     function add(file) {
       if (file.requires) {
-        file.requires.forEach(function(id) {
+        file.requires.forEach(function (id) {
           var dep = ret.ids[id];
           var idx;
-          if(dep && dep.rExt === pkg.rExt && ~(idx = list.indexOf(dep))){
+          if (dep && dep.rExt === pkg.rExt && ~(idx = list.indexOf(dep))) {
             add(list.splice(idx, 1)[0]);
           }
-        })
+        });
       }
 
       if (!packed[file.subpath] && file.rExt === pkg.rExt) {
@@ -131,10 +138,13 @@ module.exports = function(ret, pack, settings, opt) {
     var content = '';
     var has = [];
     var requires = [];
-    var requireMap = {};
+    var requireMap = {}, hasSourceMap = false;
 
-    filtered.forEach(function(file) {
-      var id = file.getId();
+    filtered.forEach(function (file) {
+      var id = file.getId(),
+			prefix = useTrack ? ('/*!' + file.id + '*/\n') : ''; // either js or css
+      if (file.isJsLike)
+        prefix = ';' + prefix;
 
       if (ret.map.res[id]) {
         var c = file.getContent();
@@ -148,21 +158,30 @@ module.exports = function(ret, pack, settings, opt) {
         fis.emit('pack:file', message);
         c = message.content;
 
-        if (c) {
-          content += content ? '\n' : '';
+        if (content) prefix = '\n' + prefix;
 
-          if (file.isJsLike) {
-            content += ';';
-          } else if (file.isCssLike) {
-            c = c.replace(/@charset\s+(?:'[^']*'|"[^"]*"|\S*);?/gi, '');
+        if (sourceNode) {
+          c = c.replace(rSourceMap, '');
+
+          sourceNode.add(prefix);
+
+          var mapFile = getMapFile(file);
+          if (mapFile) {
+            var json = JSON.parse(mapFile.getContent());
+            var smc = new SourceMap.SourceMapConsumer(json);
+
+            sourceNode.add(SourceMap.SourceNode.fromStringWithSourceMap(c, smc));
+            // mapFile.release = false;
+            // here? hasSourceMap = true;
+          } else {
+            sourceNode.add(c);
           }
-          if(useTrack){
-            content += '/*!' + file.subpath + '*/\n' + c;
-          }
-          else{
-            content += c;
-          }
+          hasSourceMap = true;
         }
+        else if (file.isCssLike && c) // cant remove code if sourceNode
+          c = c.replace(/@charset\s+(?:'[^']*'|"[^"]*"|\S*);?/gi, '');
+
+        content += prefix + c;
 
         ret.map.res[id].pkg = pid;
         requires = requires.concat(file.requires);
@@ -172,12 +191,25 @@ module.exports = function(ret, pack, settings, opt) {
     });
 
     if (has.length) {
+      if (hasSourceMap) {
+        var mapping = fis.file.wrap(pkg.dirname + '/' + pkg.filename + pkg.rExt + '.map');
+        var code_map = sourceNode.toStringWithSourceMap({
+          file: pkg.subpath
+        });
+
+        var generater = SourceMap.SourceMapGenerator.fromSourceMap(new SourceMap.SourceMapConsumer(code_map.map.toJSON()));
+        mapping.setContent(generater.toString());
+
+        ret.pkg[mapping.subpath] = mapping;
+        content += '//# sourceMappingURL=' + mapping.getUrl();
+      }
+
       pkg.setContent(content);
       ret.pkg[pkg.subpath] = pkg;
 
       // collect dependencies
       var deps = [];
-      requires.forEach(function(id) {
+      requires.forEach(function (id) {
         if (!requireMap[id]) {
           deps.push(id);
           requireMap[id] = true;
@@ -194,3 +226,17 @@ module.exports = function(ret, pack, settings, opt) {
     }
   });
 };
+
+function getMapFile(file) {
+  // 同时修改 sourcemap 文件内容。
+  var derived = file.derived;
+  if (!derived || !derived.length) {
+    derived = file.extras && file.extras.derived;
+  }
+
+  if (derived && derived[0] && derived[0].rExt === '.map') {
+    return derived[0];
+  }
+
+  return null;
+}
