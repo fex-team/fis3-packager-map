@@ -78,5 +78,19 @@ fis.match('::package', {
 })
 ```
 
+### 排除某个文件
+顺序不可颠倒，必须在**规则里的文件里排除某个文件
+
+```js
+fis.match('::package', {
+  packager: fis.plugin('map', {
+    'pkg/all.js': [
+       'libs/**.js',
+       '!libs/external.js'
+    ]
+  })
+})
+```
+
 
 
