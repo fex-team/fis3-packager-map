@@ -85,7 +85,7 @@ fis.match('::package', {
   packager: fis.plugin('map', {
     'pkg/all.js': [
        'libs/**.js',
-       '！libs/external.js'
+       '!libs/external.js'
     ]
   })
 })
